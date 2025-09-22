@@ -226,7 +226,7 @@ export function ProteinProvider({ children }: ProteinProviderProps) {
                 input = {
                     statedProtein: statedProteinValue,
                     dvPercentage: dvPercentageValue && !isNaN(dvPercentageValue) ? dvPercentageValue : undefined,
-                    proteinSource: selectedProteinSource
+                    proteinSource: selectedProteinSource || undefined
                 };
             }
 
