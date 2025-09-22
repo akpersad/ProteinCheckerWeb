@@ -5,8 +5,7 @@ import {
     ProteinCalculation,
     ProteinSource,
     QualityRating,
-    ProteinQualityRating,
-    QualityRatingColors
+    ProteinQualityRating
 } from '@/types/protein';
 import { v4 as uuidv4 } from 'uuid';
 

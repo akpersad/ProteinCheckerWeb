@@ -41,7 +41,7 @@ class DataManager {
 
             const parsed = JSON.parse(data);
             // Convert timestamp strings back to Date objects
-            return parsed.map((calc: any) => ({
+            return parsed.map((calc: { timestamp: string;[key: string]: unknown }) => ({
                 ...calc,
                 timestamp: new Date(calc.timestamp)
             }));
@@ -81,7 +81,7 @@ class DataManager {
     /**
      * Get calculation history filtered by date range
      */
-    getCalculationHistory(startDate: Date, endDate: Date): ProteinCalculation[] {
+    getCalculationHistoryByDateRange(startDate: Date, endDate: Date): ProteinCalculation[] {
         const allHistory = this.getCalculationHistory();
         return allHistory.filter(calculation =>
             calculation.timestamp >= startDate && calculation.timestamp <= endDate

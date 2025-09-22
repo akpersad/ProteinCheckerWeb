@@ -125,7 +125,6 @@ export default function ProteinSourcePicker({
                                         <div className="divide-y divide-gray-200">
                                             {filteredSources.map((source) => {
                                                 const isSelected = selectedSource?.id === source.id;
-                                                const score = source.diaasScore ?? source.pdcaasScore;
 
                                                 return (
                                                     <button

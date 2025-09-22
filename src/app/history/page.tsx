@@ -2,10 +2,10 @@
 
 import React, { useState, useMemo } from 'react';
 import { useProtein } from '@/contexts/ProteinContext';
-import { ProteinCategory, ProteinCategoryDisplay, ProteinCalculation } from '@/types/protein';
+import { ProteinCategory, ProteinCalculation } from '@/types/protein';
 import { formatProteinAmount, formatPercentage, getPercentageColorClass } from '@/utils/proteinCalculations';
 import { formatRelativeDate } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import SearchBar from '@/components/SearchBar';
 import CategoryChip from '@/components/CategoryChip';
