@@ -4,8 +4,9 @@ import React, { useState } from 'react';
 import { EducationTopic, EducationTopicDisplay } from '@/types/protein';
 import { proteinDatabase } from '@/data/proteinSources';
 import { getScoreColor } from '@/utils/proteinCalculations';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
+import { BookOpenIcon } from '@heroicons/react/24/outline';
 
 export default function EducationPage() {
     const [selectedTopic, setSelectedTopic] = useState<EducationTopic>(EducationTopic.OVERVIEW);
@@ -19,21 +20,28 @@ export default function EducationPage() {
     ];
 
     return (
-        <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-            <div className="space-y-6">
+        <div className="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            <div className="space-y-8">
                 {/* Header */}
                 <div className="text-center">
-                    <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-                        Learn About Protein
+                    <div className="floating">
+                        <div className="inline-block p-4 rounded-2xl bg-white/20 backdrop-blur-sm mb-6">
+                            <BookOpenIcon className="w-16 h-16 text-white" />
+                        </div>
+                    </div>
+                    <h1 className="text-4xl font-bold text-white sm:text-6xl mb-4">
+                        <span className="text-white drop-shadow-lg">Learn About</span>
+                        <br />
+                        <span className="text-white drop-shadow-lg">Protein</span>
                     </h1>
-                    <p className="mt-3 text-lg text-gray-600">
+                    <p className="mt-4 text-xl text-white max-w-3xl mx-auto font-medium drop-shadow-md">
                         Understanding protein quality and how to optimize your nutrition
                     </p>
                 </div>
 
                 {/* Topic Selector */}
-                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-                    <div className="flex gap-2 overflow-x-auto pb-2">
+                <Card variant="elevated" className="p-6">
+                    <div className="flex gap-3 overflow-x-auto pb-2">
                         {topics.map((topic) => (
                             <Button
                                 key={topic}
@@ -46,10 +54,10 @@ export default function EducationPage() {
                             </Button>
                         ))}
                     </div>
-                </div>
+                </Card>
 
                 {/* Content Area */}
-                <div className="space-y-6">
+                <div className="space-y-8">
                     {selectedTopic === EducationTopic.OVERVIEW && <OverviewContent />}
                     {selectedTopic === EducationTopic.DIAAS && <DIAASContent />}
                     {selectedTopic === EducationTopic.PDCAAS && <PDCAASContent />}
@@ -63,9 +71,9 @@ export default function EducationPage() {
 
 function EducationCard({ title, children }: { title: string; children: React.ReactNode }) {
     return (
-        <Card variant="elevated" className="p-6">
-            <h2 className="text-xl font-bold text-blue-600 mb-4">{title}</h2>
-            <div className="prose prose-sm max-w-none">
+        <Card variant="elevated" className="p-8 hover:scale-[1.01] transition-all duration-300 animate-fadeIn">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{title}</h2>
+            <div className="prose prose-sm max-w-none text-gray-800">
                 {children}
             </div>
         </Card>
@@ -78,7 +86,7 @@ function OverviewContent() {
             <EducationCard title="What is Protein Quality?">
                 <p>
                     Protein quality refers to how well a protein provides the essential amino acids your body needs.
-                    It's determined by two main factors:
+                    It&apos;s determined by two main factors:
                 </p>
                 <ul className="list-disc ml-6 mt-3 space-y-1">
                     <li><strong>Amino Acid Profile</strong>: Does it contain all essential amino acids?</li>
@@ -200,10 +208,10 @@ function PDCAASContent() {
             <EducationCard title="PDCAAS Limitations">
                 <div className="bg-red-50 p-4 rounded-lg">
                     <ul className="list-disc ml-6 space-y-1 text-red-800">
-                        <li>Capped at 1.0 (can't show superior quality)</li>
+                        <li>Capped at 1.0 (can&apos;t show superior quality)</li>
                         <li>Uses fecal digestibility (less accurate)</li>
                         <li>Assumes all amino acids digest equally</li>
-                        <li>Doesn't account for processing effects</li>
+                        <li>Doesn&apos;t account for processing effects</li>
                         <li>Overestimates some plant protein quality</li>
                     </ul>
                 </div>
@@ -211,7 +219,7 @@ function PDCAASContent() {
 
             <EducationCard title="When We Use PDCAAS">
                 <p>
-                    This app uses PDCAAS as a fallback when DIAAS data isn't available.
+                    This app uses PDCAAS as a fallback when DIAAS data isn&apos;t available.
                     Many protein sources still only have PDCAAS scores in scientific literature.
                 </p>
                 <p className="mt-3">
@@ -252,11 +260,10 @@ function ProteinSourcesContent() {
                 </div>
             </EducationCard>
 
-            <Card variant="elevated" className="p-6">
-                <h2 className="text-xl font-bold text-blue-600 mb-4">Highest Quality Sources</h2>
+            <Card variant="elevated" className="p-8 hover:scale-[1.01] transition-all duration-300">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Highest Quality Sources</h2>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     {topSources.map((source) => {
-                        const score = source.diaasScore ?? source.pdcaasScore ?? 0;
                         return (
                             <div key={source.id} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                                 <h3 className="font-medium text-gray-900 text-sm mb-1 line-clamp-2">
@@ -306,7 +313,7 @@ function ProteinSourcesContent() {
                     </div>
                 </div>
                 <p className="mt-3 text-sm text-gray-600">
-                    You don't need to combine at every meal - just throughout the day!
+                    You don&apos;t need to combine at every meal - just throughout the day!
                 </p>
             </EducationCard>
         </div>
@@ -330,7 +337,7 @@ function PracticalTipsContent() {
                     <div className="bg-red-50 p-4 rounded-lg">
                         <h3 className="font-semibold text-red-800 mb-2">🚩 Red Flags:</h3>
                         <ul className="list-disc ml-6 text-red-700 text-sm space-y-1">
-                            <li>"Protein blend" without specifics</li>
+                            <li>&quot;Protein blend&quot; without specifics</li>
                             <li>Very cheap protein powders</li>
                             <li>Missing amino acid information</li>
                         </ul>
@@ -363,7 +370,7 @@ function PracticalTipsContent() {
                 <ul className="list-disc ml-6 space-y-1">
                     <li>Include a high-quality protein at each meal</li>
                     <li>Combine different plant proteins throughout the day</li>
-                    <li>Don't rely solely on supplements</li>
+                    <li>Don&apos;t rely solely on supplements</li>
                     <li>Consider protein timing around workouts</li>
                     <li>Aim for 20-30g high-quality protein per meal</li>
                 </ul>

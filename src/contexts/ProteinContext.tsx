@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import {
     ProteinCalculation,
     ProteinSource,
@@ -149,12 +149,6 @@ interface ProteinProviderProps {
 export function ProteinProvider({ children }: ProteinProviderProps) {
     const [state, dispatch] = useReducer(proteinReducer, initialState);
 
-    // Load initial data
-    useEffect(() => {
-        loadHistory();
-        loadStatistics();
-    }, []);
-
     // Calculator actions
     const setStatedProtein = (value: string) => {
         dispatch({ type: 'SET_STATED_PROTEIN', payload: value });
@@ -210,7 +204,7 @@ export function ProteinProvider({ children }: ProteinProviderProps) {
     };
 
     // History actions
-    const loadHistory = () => {
+    const loadHistory = useCallback(() => {
         try {
             const history = dataManager.getCalculationHistory();
             dispatch({ type: 'SET_CALCULATION_HISTORY', payload: history });
@@ -218,7 +212,7 @@ export function ProteinProvider({ children }: ProteinProviderProps) {
             console.error('Error loading history:', error);
             setError('Failed to load calculation history');
         }
-    };
+    }, []);
 
     const deleteCalculation = (id: string) => {
         try {
@@ -270,7 +264,7 @@ export function ProteinProvider({ children }: ProteinProviderProps) {
     };
 
     // Statistics actions
-    const loadStatistics = () => {
+    const loadStatistics = useCallback(() => {
         try {
             const stats = dataManager.getCalculationStatistics();
             dispatch({ type: 'SET_STATISTICS', payload: stats });
@@ -278,12 +272,18 @@ export function ProteinProvider({ children }: ProteinProviderProps) {
             console.error('Error loading statistics:', error);
             setError('Failed to load statistics');
         }
-    };
+    }, []);
 
     // Utility actions
     const setError = (error: string | null) => {
         dispatch({ type: 'SET_ERROR', payload: error });
     };
+
+    // Load initial data
+    useEffect(() => {
+        loadHistory();
+        loadStatistics();
+    }, [loadHistory, loadStatistics]);
 
     const contextValue: ProteinContextType = {
         state,

@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import { useProtein } from '@/contexts/ProteinContext';
 import { formatProteinAmount, formatPercentage, getPercentageColorClass } from '@/utils/proteinCalculations';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import ProteinSourcePicker from '@/components/ProteinSourcePicker';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon, CalculatorIcon } from '@heroicons/react/24/outline';
 
 export default function CalculatorPage() {
   const {
@@ -41,21 +41,28 @@ export default function CalculatorPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-      <div className="space-y-6">
+    <div className="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <div className="space-y-8">
         {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-            Protein Quality Calculator
+        <div className="text-center relative">
+          <div className="floating">
+            <div className="inline-block p-4 rounded-2xl bg-white/20 backdrop-blur-sm mb-6">
+              <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center shadow-lg">
+                <CalculatorIcon className="w-8 h-8 text-white" />
+              </div>
+            </div>
+          </div>
+          <h1 className="text-4xl font-bold text-white sm:text-6xl mb-4">
+            <span className="text-white drop-shadow-lg">Protein Quality Calculator</span>
           </h1>
-          <p className="mt-3 text-lg text-gray-600 max-w-2xl mx-auto">
-            Calculate quality-adjusted protein using DIAAS/PDCAAS scores
+          <p className="mt-4 text-xl text-white max-w-3xl mx-auto font-medium drop-shadow-md">
+            Calculate quality-adjusted protein using scientific DIAAS/PDCAAS scores for optimal nutrition planning
           </p>
         </div>
 
         {/* Input Section */}
-        <Card variant="elevated" className="p-6">
-          <div className="space-y-6">
+        <Card variant="elevated" className="p-8 animate-fadeIn">
+          <div className="space-y-8">
             {/* Protein Amount Input */}
             <Input
               type="number"
@@ -84,20 +91,20 @@ export default function CalculatorPage() {
 
             {/* Protein Source Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-800 mb-3">
                 Protein Source
               </label>
               <button
                 type="button"
                 onClick={() => setShowProteinPicker(true)}
-                className="w-full p-4 text-left bg-gray-50 border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                className="w-full p-4 text-left input-modern hover:bg-white/95 focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-200"
               >
                 <div className="flex items-center justify-between">
-                  <span className={state.selectedProteinSource ? 'text-gray-900' : 'text-gray-500'}>
+                  <span className={state.selectedProteinSource ? 'text-gray-900 font-medium' : 'text-gray-500 font-medium'}>
                     {state.selectedProteinSource?.name || 'Select protein source'}
                   </span>
                   <svg
-                    className="w-5 h-5 text-gray-400"
+                    className="w-5 h-5 text-gray-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -110,9 +117,9 @@ export default function CalculatorPage() {
 
             {/* Error Display */}
             {state.error && (
-              <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center gap-3 p-4 bg-red-50/90 border-2 border-red-200 rounded-xl backdrop-blur-sm shadow-md animate-fadeIn">
                 <ExclamationTriangleIcon className="w-5 h-5 text-red-500 flex-shrink-0" />
-                <p className="text-sm text-red-700">{state.error}</p>
+                <p className="text-sm text-red-700 font-medium">{state.error}</p>
               </div>
             )}
 
@@ -140,36 +147,39 @@ export default function CalculatorPage() {
 
         {/* Results Section */}
         {state.calculationResult && (
-          <Card variant="elevated" className="p-6">
-            <div className="space-y-6">
-              <h2 className="text-xl font-bold text-gray-900">Results</h2>
+          <Card variant="elevated" className="p-8 animate-fadeIn">
+            <div className="space-y-8">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-900">Your Results</h2>
+                <div className="w-16 h-1 gradient-primary rounded-full mx-auto mt-2"></div>
+              </div>
 
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {/* Main Result */}
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <div className="text-sm text-blue-600 font-medium">Quality-Adjusted Protein</div>
-                  <div className="text-2xl font-bold text-blue-700 mt-1">
+                <div className="gradient-success p-6 rounded-2xl text-white shadow-xl hover:scale-105 transition-all duration-300">
+                  <div className="text-sm font-semibold opacity-90">Quality-Adjusted Protein</div>
+                  <div className="text-3xl font-bold mt-2">
                     {formatProteinAmount(state.calculationResult.qualityAdjustedProtein)}
                   </div>
-                  <div className="text-xs text-blue-600 mt-1">
+                  <div className="text-xs opacity-80 mt-2">
                     Based on {state.calculationResult.calculationMethod} score
                   </div>
                 </div>
 
                 {/* Quality Percentage */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-sm text-gray-600 font-medium">Protein Quality</div>
-                  <div className={`text-2xl font-bold mt-1 ${getPercentageColorClass(state.calculationResult.proteinQualityPercentage)}`}>
+                <div className="card-modern p-6 rounded-2xl shadow-xl hover:scale-105 transition-all duration-300">
+                  <div className="text-sm text-gray-600 font-semibold">Protein Quality</div>
+                  <div className={`text-3xl font-bold mt-2 ${getPercentageColorClass(state.calculationResult.proteinQualityPercentage)}`}>
                     {formatPercentage(state.calculationResult.proteinQualityPercentage)}
                   </div>
                 </div>
 
                 {/* Score Used */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-sm text-gray-600 font-medium">
+                <div className="card-modern p-6 rounded-2xl shadow-xl hover:scale-105 transition-all duration-300">
+                  <div className="text-sm text-gray-600 font-semibold">
                     {state.calculationResult.calculationMethod} Score
                   </div>
-                  <div className="text-2xl font-bold text-gray-700 mt-1">
+                  <div className="text-3xl font-bold text-gray-800 mt-2">
                     {state.calculationResult.scoreUsed.toFixed(2)}
                   </div>
                 </div>
@@ -177,9 +187,9 @@ export default function CalculatorPage() {
 
               {/* DV Adjustment */}
               {state.calculationResult.adjustedProtein && (
-                <div className="bg-orange-50 p-4 rounded-lg">
-                  <div className="text-sm text-orange-600 font-medium">DV% Adjusted Amount</div>
-                  <div className="text-xl font-bold text-orange-700 mt-1">
+                <div className="gradient-warning p-6 rounded-2xl text-white shadow-xl animate-fadeIn">
+                  <div className="text-sm font-semibold opacity-90">DV% Adjusted Amount</div>
+                  <div className="text-2xl font-bold mt-2">
                     {formatProteinAmount(state.calculationResult.adjustedProtein)}
                   </div>
                 </div>
@@ -187,11 +197,11 @@ export default function CalculatorPage() {
 
               {/* DV Discrepancy Warning */}
               {state.calculationResult.dvDiscrepancy && state.calculationResult.dvDiscrepancy > 0.5 && (
-                <div className="flex items-start gap-3 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                  <ExclamationTriangleIcon className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                <div className="flex items-start gap-4 p-5 bg-orange-50/90 border-2 border-orange-200 rounded-xl backdrop-blur-sm shadow-md animate-fadeIn">
+                  <ExclamationTriangleIcon className="w-6 h-6 text-orange-500 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm text-orange-800 font-medium">Discrepancy Notice</p>
-                    <p className="text-sm text-orange-700 mt-1">
+                    <p className="text-sm text-orange-800 font-semibold">Discrepancy Notice</p>
+                    <p className="text-sm text-orange-700 mt-1 font-medium">
                       Stated protein differs from DV% by {formatProteinAmount(state.calculationResult.dvDiscrepancy)}
                     </p>
                   </div>
@@ -202,18 +212,18 @@ export default function CalculatorPage() {
         )}
 
         {/* Quick Tips */}
-        <Card variant="outlined" className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Tips</h3>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">DIAAS vs PDCAAS</h4>
-              <p className="text-sm text-gray-600">
+        <Card variant="outlined" className="p-8">
+          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Quick Tips</h3>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div className="p-5 rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100 hover:scale-105 transition-all duration-300">
+              <h4 className="font-bold text-gray-900 mb-3 text-lg">DIAAS vs PDCAAS</h4>
+              <p className="text-sm text-gray-700 leading-relaxed">
                 DIAAS is more accurate and can exceed 1.0, while PDCAAS is capped at 1.0. We use DIAAS when available.
               </p>
             </div>
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">Daily Value %</h4>
-              <p className="text-sm text-gray-600">
+            <div className="p-5 rounded-xl bg-gradient-to-br from-green-50 to-blue-50 border border-green-100 hover:scale-105 transition-all duration-300">
+              <h4 className="font-bold text-gray-900 mb-3 text-lg">Daily Value %</h4>
+              <p className="text-sm text-gray-700 leading-relaxed">
                 Using the DV% from nutrition labels often provides more accurate calculations than stated protein amounts.
               </p>
             </div>

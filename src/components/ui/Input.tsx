@@ -10,35 +10,35 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
     ({ className, type = 'text', label, error, helper, suffix, ...props }, ref) => {
-        const baseStyles = 'flex w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50';
+        const baseStyles = 'input-modern flex w-full text-gray-800 font-medium placeholder:text-gray-500 focus:outline-none focus:ring-4 focus:ring-purple-500/20 disabled:cursor-not-allowed disabled:opacity-50';
 
-        const errorStyles = error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : '';
+        const errorStyles = error ? 'border-red-400 focus:border-red-500 focus:ring-red-500/20' : '';
 
         return (
-            <div className="space-y-1">
+            <div className="space-y-2">
                 {label && (
-                    <label className="text-sm font-medium text-gray-700">
+                    <label className="text-sm font-semibold text-gray-800">
                         {label}
                     </label>
                 )}
                 <div className="relative">
                     <input
                         type={type}
-                        className={cn(baseStyles, errorStyles, suffix && 'pr-8', className)}
+                        className={cn(baseStyles, errorStyles, suffix && 'pr-12', className)}
                         ref={ref}
                         {...props}
                     />
                     {suffix && (
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <span className="text-gray-500 text-sm">{suffix}</span>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                            <span className="text-gray-600 text-sm font-medium">{suffix}</span>
                         </div>
                     )}
                 </div>
                 {error && (
-                    <p className="text-sm text-red-600">{error}</p>
+                    <p className="text-xs text-red-600 bg-red-50/80 backdrop-blur-sm rounded-lg px-3 py-1 inline-block">{error}</p>
                 )}
                 {helper && !error && (
-                    <p className="text-sm text-gray-500">{helper}</p>
+                    <p className="text-xs text-gray-600 bg-white/60 backdrop-blur-sm rounded-lg px-3 py-1 inline-block">{helper}</p>
                 )}
             </div>
         );
