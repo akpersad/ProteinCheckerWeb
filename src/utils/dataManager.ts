@@ -93,7 +93,17 @@ class DataManager {
      */
     getCalculationHistoryForSource(proteinSource: ProteinSource): ProteinCalculation[] {
         const allHistory = this.getCalculationHistory();
-        return allHistory.filter(calc => calc.proteinSource.id === proteinSource.id);
+        return allHistory.filter(calc => {
+            // Handle both single and multiple protein sources
+            if (calc.proteinSources && calc.proteinSources.length > 0) {
+                // For multi-source calculations, check if any source matches
+                return calc.proteinSources.some(ps => ps.source && ps.source.id === proteinSource.id);
+            } else if (calc.proteinSource) {
+                // For single-source calculations (backward compatibility)
+                return calc.proteinSource.id === proteinSource.id;
+            }
+            return false;
+        });
     }
 
     /**
@@ -113,8 +123,20 @@ class DataManager {
         // Group by protein source name and count occurrences
         const sourceCount = new Map<string, number>();
         history.forEach(calc => {
-            const name = calc.proteinSource.name;
-            sourceCount.set(name, (sourceCount.get(name) || 0) + 1);
+            // Handle both single and multiple protein sources
+            if (calc.proteinSources && calc.proteinSources.length > 0) {
+                // For multi-source calculations, count each source
+                calc.proteinSources.forEach(ps => {
+                    if (ps.source) {
+                        const name = ps.source.name;
+                        sourceCount.set(name, (sourceCount.get(name) || 0) + 1);
+                    }
+                });
+            } else if (calc.proteinSource) {
+                // For single-source calculations (backward compatibility)
+                const name = calc.proteinSource.name;
+                sourceCount.set(name, (sourceCount.get(name) || 0) + 1);
+            }
         });
 
         // Sort by count and take top 5

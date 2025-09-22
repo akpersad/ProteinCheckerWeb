@@ -37,15 +37,31 @@ export default function HistoryPage() {
 
         // Filter by category
         if (state.selectedCategory !== ProteinCategory.ALL) {
-            history = history.filter(calc => calc.proteinSource.category === state.selectedCategory);
+            history = history.filter(calc => {
+                // Handle both single and multiple protein sources
+                if (calc.proteinSources && calc.proteinSources.length > 0) {
+                    return calc.proteinSources.some(ps => ps.source && ps.source.category === state.selectedCategory);
+                } else if (calc.proteinSource) {
+                    return calc.proteinSource.category === state.selectedCategory;
+                }
+                return false;
+            });
         }
 
         // Filter by search text
         if (state.searchText.trim()) {
             const searchLower = state.searchText.toLowerCase();
-            history = history.filter(calc =>
-                calc.proteinSource.name.toLowerCase().includes(searchLower)
-            );
+            history = history.filter(calc => {
+                // Handle both single and multiple protein sources
+                if (calc.proteinSources && calc.proteinSources.length > 0) {
+                    return calc.proteinSources.some(ps =>
+                        ps.source && ps.source.name.toLowerCase().includes(searchLower)
+                    );
+                } else if (calc.proteinSource) {
+                    return calc.proteinSource.name.toLowerCase().includes(searchLower);
+                }
+                return false;
+            });
         }
 
         return history;
@@ -302,6 +318,31 @@ interface HistoryCardProps {
 function HistoryCard({ calculation, onDelete }: HistoryCardProps) {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+    // Generate display name for protein sources
+    const getProteinSourceDisplay = () => {
+        if (calculation.proteinSources && calculation.proteinSources.length > 0) {
+            const validSources = calculation.proteinSources.filter(ps => ps.source);
+            if (validSources.length === 1) {
+                return validSources[0].source.name;
+            } else if (validSources.length > 1) {
+                return `${validSources[0].source.name} + ${validSources.length - 1} more`;
+            }
+        } else if (calculation.proteinSource) {
+            return calculation.proteinSource.name;
+        }
+        return 'Unknown source';
+    };
+
+    const getProteinSourcesDetail = () => {
+        if (calculation.proteinSources && calculation.proteinSources.length > 1) {
+            const validSources = calculation.proteinSources.filter(ps => ps.source);
+            return validSources.map(ps =>
+                `${ps.source.name}${ps.percentage ? ` (${ps.percentage.toFixed(1)}%)` : ''}`
+            ).join(' + ');
+        }
+        return null;
+    };
+
     return (
         <>
             <Card variant="outlined" className="p-4 hover:shadow-md transition-shadow">
@@ -309,12 +350,19 @@ function HistoryCard({ calculation, onDelete }: HistoryCardProps) {
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-2">
                             <h3 className="text-lg font-semibold text-gray-900 truncate">
-                                {calculation.proteinSource.name}
+                                {getProteinSourceDisplay()}
                             </h3>
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                 {calculation.calculationMethod}
                             </span>
                         </div>
+
+                        {/* Multi-source details */}
+                        {getProteinSourcesDetail() && (
+                            <div className="text-sm text-gray-600 mb-2 truncate">
+                                {getProteinSourcesDetail()}
+                            </div>
+                        )}
 
                         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-3">
                             <div>
@@ -370,7 +418,7 @@ function HistoryCard({ calculation, onDelete }: HistoryCardProps) {
                     <div className="bg-white rounded-lg p-6 max-w-md w-full">
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Calculation</h3>
                         <p className="text-sm text-gray-600 mb-6">
-                            Are you sure you want to delete this calculation for {calculation.proteinSource.name}?
+                            Are you sure you want to delete this calculation for {getProteinSourceDisplay()}?
                         </p>
                         <div className="flex gap-3 justify-end">
                             <Button
