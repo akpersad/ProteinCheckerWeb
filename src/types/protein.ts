@@ -40,6 +40,17 @@ export interface ProteinSource {
     description?: string;
 }
 
+export interface ProteinSourceWithPercentage {
+    source: ProteinSource;
+    percentage?: number; // Optional percentage (0-100)
+}
+
+export interface ProteinSourceValidation {
+    isValid: boolean;
+    errors: string[];
+    totalPercentage?: number;
+}
+
 export enum CalculationMethod {
     DIAAS = 'DIAAS',
     PDCAAS = 'PDCAAS'
@@ -48,7 +59,8 @@ export enum CalculationMethod {
 export interface CalculationInput {
     statedProtein: number;
     dvPercentage?: number;
-    proteinSource: ProteinSource;
+    proteinSource?: ProteinSource; // Keep for backward compatibility
+    proteinSources?: ProteinSourceWithPercentage[]; // New multi-source support
 }
 
 export interface CalculationResult {
@@ -64,7 +76,8 @@ export interface ProteinCalculation {
     id: string;
     statedProtein: number;
     dvPercentage?: number;
-    proteinSource: ProteinSource;
+    proteinSource?: ProteinSource; // Keep for backward compatibility
+    proteinSources?: ProteinSourceWithPercentage[]; // New multi-source support
     digestibleProtein: number; // Keep for backwards compatibility
     digestibilityPercentage: number; // Keep for backwards compatibility
     calculationMethod: CalculationMethod;

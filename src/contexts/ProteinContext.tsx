@@ -4,6 +4,7 @@ import React, { createContext, useContext, useReducer, useEffect, useCallback, R
 import {
     ProteinCalculation,
     ProteinSource,
+    ProteinSourceWithPercentage,
     ProteinCategory,
     CalculationStatistics,
     CalculationInput,
@@ -17,7 +18,8 @@ interface ProteinState {
     // Calculator state
     statedProtein: string;
     dvPercentage: string;
-    selectedProteinSource: ProteinSource | null;
+    selectedProteinSource: ProteinSource | null; // Keep for backward compatibility
+    proteinSources: ProteinSourceWithPercentage[]; // New multi-source support
     calculationResult: CalculationResult | null;
 
     // History state
@@ -36,6 +38,7 @@ type ProteinAction =
     | { type: 'SET_STATED_PROTEIN'; payload: string }
     | { type: 'SET_DV_PERCENTAGE'; payload: string }
     | { type: 'SET_SELECTED_PROTEIN_SOURCE'; payload: ProteinSource | null }
+    | { type: 'SET_PROTEIN_SOURCES'; payload: ProteinSourceWithPercentage[] }
     | { type: 'SET_CALCULATION_RESULT'; payload: CalculationResult | null }
     | { type: 'SET_CALCULATION_HISTORY'; payload: ProteinCalculation[] }
     | { type: 'ADD_CALCULATION'; payload: ProteinCalculation }
@@ -53,6 +56,7 @@ const initialState: ProteinState = {
     statedProtein: '',
     dvPercentage: '',
     selectedProteinSource: null,
+    proteinSources: [{ source: null as unknown as ProteinSource, percentage: undefined }],
     calculationResult: null,
     calculationHistory: [],
     searchText: '',
@@ -71,6 +75,8 @@ function proteinReducer(state: ProteinState, action: ProteinAction): ProteinStat
             return { ...state, dvPercentage: action.payload };
         case 'SET_SELECTED_PROTEIN_SOURCE':
             return { ...state, selectedProteinSource: action.payload };
+        case 'SET_PROTEIN_SOURCES':
+            return { ...state, proteinSources: action.payload };
         case 'SET_CALCULATION_RESULT':
             return { ...state, calculationResult: action.payload };
         case 'SET_CALCULATION_HISTORY':
@@ -103,6 +109,7 @@ function proteinReducer(state: ProteinState, action: ProteinAction): ProteinStat
                 statedProtein: '',
                 dvPercentage: '',
                 selectedProteinSource: null,
+                proteinSources: [{ source: null as unknown as ProteinSource, percentage: undefined }],
                 calculationResult: null,
                 error: null
             };
@@ -119,6 +126,7 @@ interface ProteinContextType {
     setStatedProtein: (value: string) => void;
     setDvPercentage: (value: string) => void;
     setSelectedProteinSource: (source: ProteinSource | null) => void;
+    setProteinSources: (sources: ProteinSourceWithPercentage[]) => void;
     calculateProtein: () => void;
     resetCalculator: () => void;
 
@@ -162,24 +170,65 @@ export function ProteinProvider({ children }: ProteinProviderProps) {
         dispatch({ type: 'SET_SELECTED_PROTEIN_SOURCE', payload: source });
     };
 
+    const setProteinSources = (sources: ProteinSourceWithPercentage[]) => {
+        dispatch({ type: 'SET_PROTEIN_SOURCES', payload: sources });
+
+        // Keep backward compatibility: if only one source, set selectedProteinSource
+        if (sources.length === 1 && sources[0].source) {
+            dispatch({ type: 'SET_SELECTED_PROTEIN_SOURCE', payload: sources[0].source });
+        } else {
+            dispatch({ type: 'SET_SELECTED_PROTEIN_SOURCE', payload: null });
+        }
+    };
+
     const calculateProtein = () => {
-        const { statedProtein, dvPercentage, selectedProteinSource } = state;
+        const { statedProtein, dvPercentage, selectedProteinSource, proteinSources } = state;
 
         // Validate inputs
         const statedProteinValue = parseFloat(statedProtein);
-        if (!selectedProteinSource || isNaN(statedProteinValue) || statedProteinValue <= 0) {
-            setError('Please enter a valid protein amount and select a protein source');
+        if (isNaN(statedProteinValue) || statedProteinValue <= 0) {
+            setError('Please enter a valid protein amount');
             return;
+        }
+
+        // Check if we have valid protein sources
+        const validSources = proteinSources.filter(ps => ps.source);
+        if (validSources.length === 0 && !selectedProteinSource) {
+            setError('Please select at least one protein source');
+            return;
+        }
+
+        // Validate percentages if multiple sources
+        if (validSources.length > 1) {
+            const hasPercentages = validSources.some(ps => ps.percentage !== undefined);
+            if (hasPercentages) {
+                const totalPercentage = validSources.reduce((sum, ps) => sum + (ps.percentage || 0), 0);
+                if (Math.abs(totalPercentage - 100) > 0.01) {
+                    setError(`Percentages must add up to 100% (currently ${totalPercentage.toFixed(1)}%)`);
+                    return;
+                }
+            }
         }
 
         try {
             const dvPercentageValue = dvPercentage ? parseFloat(dvPercentage) : undefined;
 
-            const input: CalculationInput = {
-                statedProtein: statedProteinValue,
-                dvPercentage: dvPercentageValue && !isNaN(dvPercentageValue) ? dvPercentageValue : undefined,
-                proteinSource: selectedProteinSource
-            };
+            let input: CalculationInput;
+
+            // Use multi-source if available, otherwise fall back to single source
+            if (validSources.length > 0) {
+                input = {
+                    statedProtein: statedProteinValue,
+                    dvPercentage: dvPercentageValue && !isNaN(dvPercentageValue) ? dvPercentageValue : undefined,
+                    proteinSources: validSources
+                };
+            } else {
+                input = {
+                    statedProtein: statedProteinValue,
+                    dvPercentage: dvPercentageValue && !isNaN(dvPercentageValue) ? dvPercentageValue : undefined,
+                    proteinSource: selectedProteinSource
+                };
+            }
 
             const result = calculateDigestibleProtein(input);
             dispatch({ type: 'SET_CALCULATION_RESULT', payload: result });
@@ -290,6 +339,7 @@ export function ProteinProvider({ children }: ProteinProviderProps) {
         setStatedProtein,
         setDvPercentage,
         setSelectedProteinSource,
+        setProteinSources,
         calculateProtein,
         resetCalculator,
         loadHistory,

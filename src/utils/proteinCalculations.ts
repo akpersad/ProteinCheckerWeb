@@ -4,13 +4,78 @@ import {
     CalculationMethod,
     ProteinCalculation,
     ProteinSource,
+    ProteinSourceWithPercentage,
     QualityRating,
     ProteinQualityRating
 } from '@/types/protein';
 import { v4 as uuidv4 } from 'uuid';
+import { getDefaultPercentages } from './proteinDefaults';
 
 // Constants
 const FDA_DAILY_VALUE_PROTEIN = 50.0; // grams per day
+
+/**
+ * Calculate weighted average score from multiple protein sources
+ */
+function calculateWeightedScore(sources: ProteinSourceWithPercentage[]): { score: number, method: CalculationMethod } {
+    // Ensure we have percentages - use smart defaults if not provided
+    const hasPercentages = sources.some(s => s.percentage !== undefined);
+    let sourcesWithPercentages: ProteinSourceWithPercentage[];
+
+    if (!hasPercentages) {
+        // Get default percentages based on protein source combinations
+        const validSources = sources.map(s => s.source).filter(Boolean);
+        const defaultPercentages = getDefaultPercentages(validSources);
+
+        sourcesWithPercentages = sources.map((source, index) => ({
+            ...source,
+            percentage: defaultPercentages[index] ?? (100 / sources.length)
+        }));
+    } else {
+        sourcesWithPercentages = sources.map(source => ({
+            ...source,
+            percentage: source.percentage ?? 0
+        }));
+    }
+
+    let totalWeightedDiaasScore = 0;
+    let totalWeightedPdcaasScore = 0;
+    let diaasWeight = 0;
+    let pdcaasWeight = 0;
+
+    for (const sourceWithPercentage of sourcesWithPercentages) {
+        const { source, percentage } = sourceWithPercentage;
+        const weight = (percentage || 0) / 100;
+
+        if (source.diaasScore !== undefined) {
+            totalWeightedDiaasScore += source.diaasScore * weight;
+            diaasWeight += weight;
+        }
+        if (source.pdcaasScore !== undefined) {
+            totalWeightedPdcaasScore += source.pdcaasScore * weight;
+            pdcaasWeight += weight;
+        }
+    }
+
+    // Prefer DIAAS if we have enough data, otherwise use PDCAAS
+    if (diaasWeight > 0.5) {
+        return {
+            score: totalWeightedDiaasScore / diaasWeight,
+            method: CalculationMethod.DIAAS
+        };
+    } else if (pdcaasWeight > 0) {
+        return {
+            score: totalWeightedPdcaasScore / pdcaasWeight,
+            method: CalculationMethod.PDCAAS
+        };
+    } else {
+        // Fallback
+        return {
+            score: 0.75,
+            method: CalculationMethod.DIAAS
+        };
+    }
+}
 
 /**
  * Calculate quality-adjusted protein using DIAAS or PDCAAS scores
@@ -20,7 +85,7 @@ const FDA_DAILY_VALUE_PROTEIN = 50.0; // grams per day
  * due to limiting amino acids, making it "60% as effective" as a complete protein.
  */
 export function calculateDigestibleProtein(input: CalculationInput): CalculationResult {
-    const { statedProtein, dvPercentage, proteinSource } = input;
+    const { statedProtein, dvPercentage, proteinSource, proteinSources } = input;
 
     // Use DV% to calculate protein amount if provided, otherwise use stated protein
     let adjustedProtein = statedProtein;
@@ -37,20 +102,35 @@ export function calculateDigestibleProtein(input: CalculationInput): Calculation
         }
     }
 
-    // Use DIAAS if available, otherwise fall back to PDCAAS
     let score: number;
     let method: CalculationMethod;
 
-    if (proteinSource.diaasScore !== undefined) {
-        score = proteinSource.diaasScore;
-        method = CalculationMethod.DIAAS;
-    } else if (proteinSource.pdcaasScore !== undefined) {
-        score = proteinSource.pdcaasScore;
-        method = CalculationMethod.PDCAAS;
+    // Handle multiple protein sources
+    if (proteinSources && proteinSources.length > 0) {
+        const validSources = proteinSources.filter(ps => ps.source);
+        if (validSources.length === 0) {
+            throw new Error('No valid protein sources provided');
+        }
+
+        const weightedResult = calculateWeightedScore(validSources);
+        score = weightedResult.score;
+        method = weightedResult.method;
+    }
+    // Handle single protein source (backward compatibility)
+    else if (proteinSource) {
+        if (proteinSource.diaasScore !== undefined) {
+            score = proteinSource.diaasScore;
+            method = CalculationMethod.DIAAS;
+        } else if (proteinSource.pdcaasScore !== undefined) {
+            score = proteinSource.pdcaasScore;
+            method = CalculationMethod.PDCAAS;
+        } else {
+            // Fallback for sources without scores
+            score = 0.75;
+            method = CalculationMethod.DIAAS;
+        }
     } else {
-        // Fallback for sources without scores
-        score = 0.75;
-        method = CalculationMethod.DIAAS;
+        throw new Error('No protein source provided');
     }
 
     const qualityAdjustedProtein = adjustedProtein * score;
@@ -77,7 +157,8 @@ export function createCalculationRecord(
         id: uuidv4(),
         statedProtein: input.statedProtein,
         dvPercentage: input.dvPercentage,
-        proteinSource: input.proteinSource,
+        proteinSource: input.proteinSource, // Keep for backward compatibility
+        proteinSources: input.proteinSources, // New multi-source support
         digestibleProtein: result.qualityAdjustedProtein,
         digestibilityPercentage: result.proteinQualityPercentage,
         calculationMethod: result.calculationMethod,

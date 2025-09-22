@@ -1,9 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Protein Quality Calculator
+
+A modern web application that calculates quality-adjusted protein amounts using scientific DIAAS and PDCAAS scores. Built with Next.js, TypeScript, and Tailwind CSS.
+
+## Overview
+
+The Protein Quality Calculator helps users understand that not all proteins are created equal. By using scientifically validated protein quality scores (DIAAS and PDCAAS), the app calculates how much "usable" protein you're actually getting from different food sources.
+
+### Key Features
+
+- **Scientific Accuracy**: Uses DIAAS (preferred) and PDCAAS scores from peer-reviewed research
+- **Multi-Source Support**: Calculate protein quality for single or multiple protein sources with custom percentages
+- **Daily Value Integration**: Optional DV% input for more accurate calculations from nutrition labels
+- **Comprehensive Database**: 50+ protein sources across categories (meat, dairy, plant, supplements)
+- **Calculation History**: Track and analyze your protein calculations over time
+- **Educational Content**: Learn about protein quality, DIAAS vs PDCAAS, and practical nutrition tips
+- **Data Export/Import**: Save and share your calculation history
+- **Modern UI**: Beautiful, responsive design with smooth animations
+
+## How It Works
+
+1. **Enter Protein Amount**: Input the protein grams from your food label
+2. **Add Daily Value %** (optional): More accurate than stated protein amounts
+3. **Select Protein Source(s)**: Choose from our database or combine multiple sources
+4. **Calculate**: Get your quality-adjusted protein amount and quality percentage
+5. **Review Results**: See detailed breakdown of protein quality and calculation method used
+
+## Protein Quality Scores
+
+- **DIAAS (Digestible Indispensable Amino Acid Score)**: Gold standard since 2013, can exceed 1.0
+- **PDCAAS (Protein Digestibility Corrected Amino Acid Score)**: Previous standard, capped at 1.0
+- **Quality Ratings**: Excellent (≥1.0), High (0.8-0.99), Good (0.6-0.79), Fair (0.4-0.59), Poor (<0.4)
+
+## Technology Stack
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Styling**: Tailwind CSS 4, Headless UI
+- **Icons**: Heroicons
+- **State Management**: React Context API
+- **Data Persistence**: Local Storage
+- **Build Tool**: Turbopack
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18+ 
+- npm, yarn, pnpm, or bun
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd protein-checker-web
+```
+
+2. Install dependencies:
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+3. Run the development server:
 ```bash
 npm run dev
 # or
@@ -14,23 +75,63 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` - Start development server with Turbopack
+- `npm run build` - Build for production with Turbopack
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/                    # Next.js app router pages
+│   ├── page.tsx           # Main calculator page
+│   ├── history/           # Calculation history page
+│   ├── education/         # Educational content page
+│   └── layout.tsx         # Root layout
+├── components/            # Reusable UI components
+│   ├── ui/               # Base UI components (Button, Card, Input)
+│   ├── MultiProteinSourcePicker.tsx
+│   ├── ProteinSourcePicker.tsx
+│   ├── SearchBar.tsx
+│   └── CategoryChip.tsx
+├── contexts/             # React contexts
+│   └── ProteinContext.tsx
+├── data/                 # Protein source database
+│   └── proteinSources.ts
+├── types/                # TypeScript type definitions
+│   └── protein.ts
+└── utils/                # Utility functions
+    ├── proteinCalculations.ts
+    ├── dataManager.ts
+    └── proteinDefaults.ts
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Key Concepts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Protein Quality
+Protein quality is determined by:
+- **Amino Acid Profile**: Contains all essential amino acids
+- **Digestibility**: How well the body can absorb and use the protein
 
-## Deploy on Vercel
+### DIAAS vs PDCAAS
+- **DIAAS**: More accurate, measures individual amino acid digestibility, can exceed 1.0
+- **PDCAAS**: Older method, capped at 1.0, uses overall protein digestibility
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Multi-Source Calculations
+When combining protein sources, the app:
+1. Calculates quality-adjusted protein for each source
+2. Applies percentage weights if specified
+3. Sums the results for total quality-adjusted protein
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Contributing
+
+This is a personal project, but suggestions and improvements are welcome! The codebase follows TypeScript best practices and uses modern React patterns.
+
+## License
+
+This project is for personal use and educational purposes.

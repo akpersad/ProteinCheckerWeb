@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useProtein } from '@/contexts/ProteinContext';
 import { formatProteinAmount, formatPercentage, getPercentageColorClass } from '@/utils/proteinCalculations';
 import { Card } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import ProteinSourcePicker from '@/components/ProteinSourcePicker';
+import MultiProteinSourcePicker from '@/components/MultiProteinSourcePicker';
 import { ExclamationTriangleIcon, CalculatorIcon } from '@heroicons/react/24/outline';
 
 export default function CalculatorPage() {
@@ -14,23 +14,23 @@ export default function CalculatorPage() {
     state,
     setStatedProtein,
     setDvPercentage,
-    setSelectedProteinSource,
+    setProteinSources,
     calculateProtein,
     resetCalculator,
     setError
   } = useProtein();
 
-  const [showProteinPicker, setShowProteinPicker] = useState(false);
 
+  const validSources = state.proteinSources.filter(ps => ps.source);
   const canCalculate =
     state.statedProtein.trim() !== '' &&
-    state.selectedProteinSource !== null &&
+    validSources.length > 0 &&
     !isNaN(parseFloat(state.statedProtein)) &&
     parseFloat(state.statedProtein) > 0;
 
   const handleCalculate = () => {
     if (!canCalculate) {
-      setError('Please enter a valid protein amount and select a protein source');
+      setError('Please enter a valid protein amount and select at least one protein source');
       return;
     }
     calculateProtein();
@@ -92,31 +92,17 @@ export default function CalculatorPage() {
             {/* Protein Source Selection */}
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-3">
-                Protein Source
+                Protein Sources
               </label>
-              <button
-                type="button"
-                onClick={() => setShowProteinPicker(true)}
-                className="w-full p-4 text-left input-modern hover:bg-white/95 focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-200"
-              >
-                <div className="flex items-center justify-between">
-                  <span className={state.selectedProteinSource ? 'text-gray-900 font-medium' : 'text-gray-500 font-medium'}>
-                    {state.selectedProteinSource?.name || 'Select protein source'}
-                  </span>
-                  <svg
-                    className="w-5 h-5 text-gray-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </button>
+              <MultiProteinSourcePicker
+                proteinSources={state.proteinSources}
+                onSourcesChange={setProteinSources}
+                error={state.error ?? undefined}
+              />
             </div>
 
-            {/* Error Display */}
-            {state.error && (
+            {/* Additional error display for general errors not handled by MultiProteinSourcePicker */}
+            {state.error && !state.error.toLowerCase().includes('percentage') && !state.error.toLowerCase().includes('protein source') && (
               <div className="flex items-center gap-3 p-4 bg-red-50/90 border-2 border-red-200 rounded-xl backdrop-blur-sm shadow-md animate-fadeIn">
                 <ExclamationTriangleIcon className="w-5 h-5 text-red-500 flex-shrink-0" />
                 <p className="text-sm text-red-700 font-medium">{state.error}</p>
@@ -152,6 +138,29 @@ export default function CalculatorPage() {
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-gray-900">Your Results</h2>
                 <div className="w-16 h-1 gradient-primary rounded-full mx-auto mt-2"></div>
+
+                {/* Display protein sources used */}
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                  <div className="text-sm font-medium text-gray-700 mb-2">Protein Sources Used:</div>
+                  {validSources.length === 1 ? (
+                    <div className="text-gray-900 font-semibold">
+                      {validSources[0].source.name}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-800 space-y-1">
+                      {validSources.map((ps, index) => (
+                        <div key={index} className="flex justify-between items-center">
+                          <span>{ps.source.name}</span>
+                          {ps.percentage && (
+                            <span className="font-medium text-blue-600">
+                              {ps.percentage.toFixed(1)}%
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -231,13 +240,6 @@ export default function CalculatorPage() {
         </Card>
       </div>
 
-      {/* Protein Source Picker Modal */}
-      <ProteinSourcePicker
-        isOpen={showProteinPicker}
-        onClose={() => setShowProteinPicker(false)}
-        selectedSource={state.selectedProteinSource}
-        onSelectSource={setSelectedProteinSource}
-      />
     </div>
   );
 }
