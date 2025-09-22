@@ -212,8 +212,8 @@ export default function MultiProteinSourcePicker({
                         type="button"
                         onClick={() => setUsePercentages(!usePercentages)}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${usePercentages
-                                ? 'bg-purple-100 text-purple-700 border-2 border-purple-200'
-                                : 'bg-gray-100 text-gray-700 border-2 border-gray-200 hover:bg-gray-200'
+                            ? 'bg-purple-100 text-purple-700 border-2 border-purple-200'
+                            : 'bg-gray-100 text-gray-700 border-2 border-gray-200 hover:bg-gray-200'
                             }`}
                     >
                         <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${usePercentages ? 'bg-purple-600 border-purple-600' : 'border-gray-400'
@@ -228,7 +228,7 @@ export default function MultiProteinSourcePicker({
                     </button>
                     {!usePercentages && (
                         <span className="text-sm text-gray-500">
-                            We'll automatically distribute based on protein quality
+                            We&apos;ll automatically distribute based on protein quality
                         </span>
                     )}
                 </div>
